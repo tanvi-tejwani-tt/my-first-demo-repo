@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
     - name: Checkout Code
@@ -29,14 +29,12 @@ jobs:
         scp -o StrictHostKeyChecking=no \
             $LOCAL_FILE_PATH $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEST_PATH
             
-    - name: Verify File and Send Email Notification
+    - name: Verify File 
       env:
         REMOTE_USER: ubuntu              
         REMOTE_HOST: 54.197.201.247
         REMOTE_FILE_PATH: /home/ubuntu/file.txt
-        EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
-        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+        
       run: |
         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
           "[ -f $REMOTE_FILE_PATH ] && echo 'File exists: $REMOTE_FILE_PATH' || echo 'File does not exist: $REMOTE_FILE_PATH'" > status.txt
@@ -52,4 +50,14 @@ jobs:
           echo "The file upload failed. Please check the workflow logs." >> message.txt
         fi
 
-        sendmail -S smtp://smtp.gmail.com:587 -xu "$EMAIL_USERNAME" -xp "$EMAIL_PASSWORD" -t "$EMAIL_TO" -f "$EMAIL_USERNAME" -u "$(cat message.txt)"
+    - name: Send Email Notification
+  	  uses: dawidd6/action-send-mail@v3
+  		with:
+        server_address: ${{ secrets.EMAIL_SERVER }}
+        server_port: ${{ secrets.EMAIL_PORT }}
+        username: ${{ secrets.EMAIL_USERNAME }}
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: File Upload Status
+        body: message.txt
+        to: ${{ secrets.EMAIL_TO }}
+        from: ${{ secrets.EMAIL_USERNAME }}
