@@ -1,4 +1,4 @@
-name: Run on Remote Machine via SSH
+name: Copy File and Send Email Notification
 
 on:
   push:
@@ -6,33 +6,50 @@ on:
       - main
 
 jobs:
-  remote-job:
-    runs-on: self-hosted  
+  deploy:
+    runs-on: self-hosted
+
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+    - name: Checkout Code
+      uses: actions/checkout@v3
 
-      - name: Setup SSH Key
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H 54.197.201.247 >> ~/.ssh/known_hosts
-          
+    - name: Set up SSH
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
 
-      - name: Execute Command on Remote Machine
-        run: |
-          echo $secrets.SSH_PRIVATE_KEY
+    - name: Copy File to Remote Machine
+      env:
+        REMOTE_USER: ubuntu              
+        REMOTE_HOST: 54.197.201.247          
+        LOCAL_FILE_PATH: file.txt
+        REMOTE_DEST_PATH: /home/ubuntu/  
+      run: |
+        scp -o StrictHostKeyChecking=no \
+            $LOCAL_FILE_PATH $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEST_PATH
+            
+    - name: Verify File and Send Email Notification
+      env:
+        REMOTE_USER: ubuntu              
+        REMOTE_HOST: 54.197.201.247
+        REMOTE_FILE_PATH: /home/ubuntu/file.txt
+        EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        EMAIL_TO: ${{ secrets.EMAIL_TO }}
+      run: |
+        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
+          "[ -f $REMOTE_FILE_PATH ] && echo 'File exists: $REMOTE_FILE_PATH' || echo 'File does not exist: $REMOTE_FILE_PATH'" > status.txt
 
-      
+        # Send email based on status
+        if grep -q 'File exists' status.txt; then
+          echo "File exists. Sending notification."
+          echo "Subject: File Upload Status" > message.txt
+          echo "The file has been successfully uploaded to $REMOTE_FILE_PATH." >> message.txt
+        else
+          echo "File does not exist. Sending notification."
+          echo "Subject: File Upload Failed" > message.txt
+          echo "The file upload failed. Please check the workflow logs." >> message.txt
+        fi
 
-      - name: Verify File Exists on Remote Machine
-        env:
-         REMOTE_USER: ubuntu              
-         REMOTE_HOST: 54.197.201.247  
-         REMOTE_FILE_PATH: /home/ubuntu/demofile.txt  # Full path to the copied file
-        run: |
-          ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
-          "[ -f $REMOTE_FILE_PATH ] && echo 'File exists: $REMOTE_FILE_PATH' || echo 'File does not exist: $REMOTE_FILE_PATH'"
-
-          
+        sendmail -S smtp://smtp.gmail.com:587 -xu "$EMAIL_USERNAME" -xp "$EMAIL_PASSWORD" -t "$EMAIL_TO" -f "$EMAIL_USERNAME" -u "$(cat message.txt)"
