@@ -4,71 +4,72 @@ on:
   push:
     branches:
       - main
-
 jobs:
-runs-on: self-hosted
-deploy:
-  steps:
-  - name: Checkout Code
-    uses: actions/checkout@v3
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
-  - name: Set up SSH
-    run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-  - name: Copy File to Remote Machine
-    env:
-        REMOTE_USER: ubuntu              
-        REMOTE_HOST: 54.197.201.247          
-        LOCAL_FILE_PATH: file.txt
-        REMOTE_DEST_PATH: /home/ubuntu/  
-    run: |
-        scp -o StrictHostKeyChecking=no \
+      - name: Copy File to Remote Machine
+        env:
+          REMOTE_USER: ubuntu              
+          REMOTE_HOST: 54.197.201.247          
+          LOCAL_FILE_PATH: file.txt
+          REMOTE_DEST_PATH: /home/ubuntu/  
+        run: |
+          scp -o StrictHostKeyChecking=no \
             $LOCAL_FILE_PATH $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEST_PATH
             
-  - name: Verify File 
-    env:
-        REMOTE_USER: ubuntu              
-        REMOTE_HOST: 54.197.201.247
-        REMOTE_FILE_PATH: /home/ubuntu/file.txt
+      - name: Verify File 
+        env:
+          REMOTE_USER: ubuntu              
+          REMOTE_HOST: 54.197.201.247
+          REMOTE_FILE_PATH: /home/ubuntu/file.txt
         
-    run: |
-        ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
+        run: |
+          ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
           "[ -f $REMOTE_FILE_PATH ] && echo 'File exists: $REMOTE_FILE_PATH' || echo 'File does not exist: $REMOTE_FILE_PATH'" > status.txt
 
-        # Send email based on status
-        if grep -q 'File exists' status.txt; then
-          echo "File exists. Sending notification."
-          echo "Subject: File Upload Status" > message.txt
-          echo "The file has been successfully uploaded to $REMOTE_FILE_PATH." >> message.txt
-        else
-          echo "File does not exist. Sending notification."
-          echo "Subject: File Upload Failed" > message.txt
-          echo "The file upload failed. Please check the workflow logs." >> message.txt
-        fi
+          # Send email based on status
+          if grep -q 'File exists' status.txt; then
+            echo "File exists. Sending notification."
+            echo "Subject: File Upload Status" > message.txt
+            echo "The file has been successfully uploaded to $REMOTE_FILE_PATH." >> message.txt
+          else
+            echo "File does not exist. Sending notification."
+            echo "Subject: File Upload Failed" > message.txt
+            echo "The file upload failed. Please check the workflow logs." >> message.txt
+          fi
         
-  - name: Upload the file as an artifact
-    uses: actions/upload-artifact@v3
-    with:
-        name: text-file-artifact
-        path: message.txt
+      - name: Upload the file as an artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: text-file-artifact
+          path: message.txt
 
-
-  - name: Download the artifact
-    uses: actions/download-artifact@v3
-    with:
-      name: text-file-artifact
+      - name: Download the artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: text-file-artifact
+      
+      - name: Display the file content
+        run: cat message.txt
           
-  - name: Send Email Notification
-    uses: dawidd6/action-send-mail@v3
-    with:
-        server_address: ${{ secrets.EMAIL_SERVER }}
-        server_port: ${{ secrets.EMAIL_PORT }}
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: File Upload Status
-        body: $(cat message.txt)
-        to: ${{ secrets.EMAIL_TO }}
-        from: ${{ secrets.EMAIL_USERNAME }}
+      - name: Send Email Notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.EMAIL_SERVER }}
+          server_port: ${{ secrets.EMAIL_PORT }}
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: File Upload Status
+          body: $(cat output.txt)
+          to: ${{ secrets.EMAIL_TO }}
+          from: ${{ secrets.EMAIL_USERNAME }}
