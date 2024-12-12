@@ -49,6 +49,8 @@ jobs:
           echo "Subject: File Upload Failed" > message.txt
           echo "The file upload failed. Please check the workflow logs." >> message.txt
         fi
+        content=$(cat message.txt)
+          echo "file_content=$content" >> $file_content
 
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
@@ -58,6 +60,6 @@ jobs:
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: File Upload Status
-        body: message.txt
+        body: "$file_content"
         to: ${{ secrets.EMAIL_TO }}
         from: ${{ secrets.EMAIL_USERNAME }}
