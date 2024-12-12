@@ -24,14 +24,15 @@ jobs:
         run: |
           echo $secrets.SSH_PRIVATE_KEY
 
-      - name: Copy File to Remote Machine
+      
+
+      - name: Verify File Exists on Remote Machine
         env:
          REMOTE_USER: ubuntu              
-         REMOTE_HOST: 54.197.201.247          
-         LOCAL_FILE_PATH: demofile.txt
-         REMOTE_DEST_PATH: /home/ubuntu/  
+         REMOTE_HOST: 54.197.201.247  
+         REMOTE_FILE_PATH: /home/ubuntu/demofile.txt  # Full path to the copied file
         run: |
-         scp -o StrictHostKeyChecking=no \
-            $LOCAL_FILE_PATH $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEST_PATH
+          ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
+          "[ -f $REMOTE_FILE_PATH ] && echo 'File exists: $REMOTE_FILE_PATH' || echo 'File does not exist: $REMOTE_FILE_PATH'"
 
           
