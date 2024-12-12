@@ -6,36 +6,35 @@ on:
       - main
 
 jobs:
-  deploy:
-    runs-on: self-hosted
+runs-on: self-hosted
+deploy:
+  steps:
+  - name: Checkout Code
+    uses: actions/checkout@v3
 
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@v3
-
-    - name: Set up SSH
-      run: |
+  - name: Set up SSH
+    run: |
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
         chmod 600 ~/.ssh/id_rsa
 
-    - name: Copy File to Remote Machine
-      env:
+  - name: Copy File to Remote Machine
+    env:
         REMOTE_USER: ubuntu              
         REMOTE_HOST: 54.197.201.247          
         LOCAL_FILE_PATH: file.txt
         REMOTE_DEST_PATH: /home/ubuntu/  
-      run: |
+    run: |
         scp -o StrictHostKeyChecking=no \
             $LOCAL_FILE_PATH $REMOTE_USER@$REMOTE_HOST:$REMOTE_DEST_PATH
             
-    - name: Verify File 
-      env:
+  - name: Verify File 
+    env:
         REMOTE_USER: ubuntu              
         REMOTE_HOST: 54.197.201.247
         REMOTE_FILE_PATH: /home/ubuntu/file.txt
         
-      run: |
+    run: |
         ssh -o StrictHostKeyChecking=no $REMOTE_USER@$REMOTE_HOST \
           "[ -f $REMOTE_FILE_PATH ] && echo 'File exists: $REMOTE_FILE_PATH' || echo 'File does not exist: $REMOTE_FILE_PATH'" > status.txt
 
@@ -49,17 +48,27 @@ jobs:
           echo "Subject: File Upload Failed" > message.txt
           echo "The file upload failed. Please check the workflow logs." >> message.txt
         fi
-        content=$(cat message.txt)
-          echo "file_content=$content" >> $GITHUB_ENV
+        
+  - name: Upload the file as an artifact
+    uses: actions/upload-artifact@v3
+    with:
+        name: text-file-artifact
+        path: message.txt
 
-    - name: Send Email Notification
-      uses: dawidd6/action-send-mail@v3
-      with:
+
+  - name: Download the artifact
+    uses: actions/download-artifact@v3
+    with:
+      name: text-file-artifact
+          
+  - name: Send Email Notification
+    uses: dawidd6/action-send-mail@v3
+    with:
         server_address: ${{ secrets.EMAIL_SERVER }}
         server_port: ${{ secrets.EMAIL_PORT }}
         username: ${{ secrets.EMAIL_USERNAME }}
         password: ${{ secrets.EMAIL_PASSWORD }}
         subject: File Upload Status
-        body: "$file_content"
+        body: $(cat message.txt)
         to: ${{ secrets.EMAIL_TO }}
         from: ${{ secrets.EMAIL_USERNAME }}
