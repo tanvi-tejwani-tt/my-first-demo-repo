@@ -51,8 +51,8 @@ jobs:
         fi
 
     - name: Send Email Notification
-  	  uses: dawidd6/action-send-mail@v3
-  		with:
+      uses: dawidd6/action-send-mail@v3
+      with:
         server_address: ${{ secrets.EMAIL_SERVER }}
         server_port: ${{ secrets.EMAIL_PORT }}
         username: ${{ secrets.EMAIL_USERNAME }}
