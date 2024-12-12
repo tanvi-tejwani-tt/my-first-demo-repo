@@ -21,4 +21,4 @@ jobs:
 
       - name: Execute Command on Remote Machine
         run: |
-          ssh -i sshkey ubuntu@54.197.201.247 "hostname && echo 'Hello from remote machine'"
+          ssh ubuntu@54.197.201.247 "hostname && echo 'Hello from remote machine'"
