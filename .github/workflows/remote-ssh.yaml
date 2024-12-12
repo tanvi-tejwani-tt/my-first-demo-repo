@@ -22,5 +22,5 @@ jobs:
 
       - name: Execute Command on Remote Machine
         run: |
-          echo secrets.SSH_PRIVATE_KEY
+          echo $secrets.SSH_PRIVATE_KEY
           
