@@ -14,8 +14,11 @@ jobs:
 
       - name: Setup SSH Key
         run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H 54.197.201.247 >> ~/.ssh/known_hosts
 
       - name: Execute Command on Remote Machine
         run: |
-          ssh ubuntu@54.197.201.247 "hostname && echo 'Hello from remote machine'"
+          ssh -i sshkey ubuntu@54.197.201.247 "hostname && echo 'Hello from remote machine'"
