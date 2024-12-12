@@ -50,7 +50,7 @@ jobs:
           echo "The file upload failed. Please check the workflow logs." >> message.txt
         fi
         content=$(cat message.txt)
-          echo "file_content=$content" >> $file_content
+          echo "file_content=$content" >> $GITHUB_ENV
 
     - name: Send Email Notification
       uses: dawidd6/action-send-mail@v3
