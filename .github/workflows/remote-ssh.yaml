@@ -70,6 +70,7 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: File Upload Status
-          body: $(cat message.txt)
+          body: |
+            $(cat output.txt)
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_USERNAME }}
