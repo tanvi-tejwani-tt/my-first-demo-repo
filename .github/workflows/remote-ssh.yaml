@@ -6,7 +6,7 @@ on:
       - main
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -71,6 +71,6 @@ jobs:
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: File Upload Status
           body: |
-            $(cat output.txt)
+            $(output.txt)
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_USERNAME }}
