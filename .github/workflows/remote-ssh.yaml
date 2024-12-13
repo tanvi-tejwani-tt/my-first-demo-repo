@@ -39,18 +39,22 @@ jobs:
 
           # Send email based on status
           if grep -q 'File exists' status.txt; then
-            echo "File exists. Sending notification."
-            echo "Subject: File Upload Status" > message.txt
-            echo "The file has been successfully uploaded to $REMOTE_FILE_PATH." >> message.txt
+            echo "The file has been successfully uploaded " > message.txt
           else
             echo "File does not exist. Sending notification."
             echo "Subject: File Upload Failed" > message.txt
             echo "The file upload failed. Please check the workflow logs." >> message.txt
           fi
+          # FILE_CONTENT=$(cat message.txt)
+          # echo "File content:"
+          # echo "$FILE_CONTENT"
+          # echo "file_content=$FILE_CONTENT" >> $GITHUB_OUTPUT
+
           FILE_CONTENT=$(cat message.txt)
-          echo "File content:"
-          echo "$FILE_CONTENT"
-          echo "file_content=$FILE_CONTENT" >> $GITHUB_OUTPUT
+          # Escape newlines and special characters
+          echo "file_content<<EOF" >> $GITHUB_OUTPUT
+          echo "$FILE_CONTENT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
                  
       - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
