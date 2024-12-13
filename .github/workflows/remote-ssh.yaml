@@ -59,6 +59,6 @@ jobs:
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: File Upload Status
-          body: ${{ steps.read_file.outputs.file_content }}
+          body: "$FILE_CONTENT"
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_USERNAME }}
