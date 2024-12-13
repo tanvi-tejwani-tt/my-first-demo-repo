@@ -45,17 +45,12 @@ jobs:
             echo "Subject: File Upload Failed" > message.txt
             echo "The file upload failed. Please check the workflow logs." >> message.txt
           fi
-          # FILE_CONTENT=$(cat message.txt)
-          # echo "File content:"
-          # echo "$FILE_CONTENT"
-          # echo "file_content=$FILE_CONTENT" >> $GITHUB_OUTPUT
-
           FILE_CONTENT=$(cat message.txt)
-          # Escape newlines and special characters
-          echo "file_content<<EOF" >> $GITHUB_OUTPUT
-          echo "$FILE_CONTENT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-                 
+          echo "File content:"
+          echo "$FILE_CONTENT"
+          echo "file_content=$FILE_CONTENT" >> $GITHUB_OUTPUT
+
+                
       - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
         with:
