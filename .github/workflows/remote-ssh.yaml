@@ -20,7 +20,7 @@ jobs:
       - name: Copy File to Remote Machine
         env:
           REMOTE_USER: ubuntu              
-          REMOTE_HOST: 54.197.201.247          
+          REMOTE_HOST: 54.242.219.144          
           LOCAL_FILE_PATH: file.txt
           REMOTE_DEST_PATH: /home/ubuntu/ 
         run: |
@@ -30,7 +30,7 @@ jobs:
       - name: Verify File 
         env:
           REMOTE_USER: ubuntu              
-          REMOTE_HOST: 54.197.201.247
+          REMOTE_HOST: 54.242.219.144
           REMOTE_FILE_PATH: /home/ubuntu/file.txt
         
         run: |
@@ -60,10 +60,11 @@ jobs:
           name: text-file-artifact
       
       - name: Display the file content
-        run: cat message.txt
+        run: echo message.txt
           
       - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
+        
         with:
           server_address: ${{ secrets.EMAIL_SERVER }}
           server_port: ${{ secrets.EMAIL_PORT }}
