@@ -50,7 +50,7 @@ jobs:
           FILE_CONTENT=$(cat message.txt)
           echo "File content:"
           echo "$FILE_CONTENT"
-          echo "::set-output name=file_content::$FILE_CONTENT"
+          echo "file_content=$FILE_CONTENT" >> $GITHUB_OUTPUT
                  
       - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
