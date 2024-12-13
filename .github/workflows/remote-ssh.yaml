@@ -47,31 +47,19 @@ jobs:
             echo "Subject: File Upload Failed" > message.txt
             echo "The file upload failed. Please check the workflow logs." >> message.txt
           fi
-        
-      - name: Upload the file as an artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: text-file-artifact
-          path: message.txt
-
-      - name: Download the artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: text-file-artifact
-      
-      - name: Display the file content
-        run: echo message.txt
-          
+          FILE_CONTENT=$(cat message.txt)
+          echo "File content:"
+          echo "$FILE_CONTENT"
+          echo "::set-output name=file_content::$FILE_CONTENT"
+                 
       - name: Send Email Notification
         uses: dawidd6/action-send-mail@v3
-        
         with:
           server_address: ${{ secrets.EMAIL_SERVER }}
           server_port: ${{ secrets.EMAIL_PORT }}
           username: ${{ secrets.EMAIL_USERNAME }}
           password: ${{ secrets.EMAIL_PASSWORD }}
           subject: File Upload Status
-          body: |
-            $(output.txt)
+          body: ${{ steps.read_file.outputs.file_content }}
           to: ${{ secrets.EMAIL_TO }}
           from: ${{ secrets.EMAIL_USERNAME }}
