@@ -20,4 +20,4 @@ jobs:
           
       - name: Run Ansible Playbook
         run: |
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@34.201.244.167 "ansible-playbook /home/ubuntu/gitpull.yml"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ubuntu@34.201.244.167 "ansible-playbook -i /home/ubuntu/.ansible/inventory /home/ubuntu/gitpull.yml"
