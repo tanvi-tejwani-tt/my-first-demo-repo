@@ -1,1 +1,1 @@
-This is a test file to check email notification
+This is a test file to check ansible playbook run
